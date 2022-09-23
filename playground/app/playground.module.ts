@@ -13,13 +13,9 @@ import { ToastrModule } from 'ngx-toastr';
 
 import { AppMaterialModule } from './material.module';
 import {
-  ExamplesComponent
+  ExamplesComponent, KitchenSinkComponent
 } from './components';
 import { AppComponent } from './app.component';
-import { CopyComponent } from './components/copy';
-import { FsClipboardModule } from 'src/app/fs-clipboard.module';
-import { ClipboardButtonComponent } from './components/clipboard-button';
-import { ClipboardComponent } from './components/clipboard';
 
 
 const routes: Routes = [
@@ -36,7 +32,6 @@ const routes: Routes = [
     FsLabelModule,
     FsStoreModule,
     FsExampleModule.forRoot(),
-    FsClipboardModule,
     FsMessageModule.forRoot(),
     ToastrModule.forRoot({ preventDuplicates: true }),
     RouterModule.forRoot(routes),
@@ -44,9 +39,7 @@ const routes: Routes = [
   declarations: [
     AppComponent,
     ExamplesComponent,
-    CopyComponent,
-    ClipboardButtonComponent,
-    ClipboardComponent,
+    KitchenSinkComponent,
   ],
 })
 export class PlaygroundModule {

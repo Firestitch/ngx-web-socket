@@ -2,7 +2,7 @@
   "extends": "./tools/config/tsconfig.cli.json",
   "compilerOptions": {
     "paths": {
-      "@firestitch/clipboard": [
+      "@firestitch/web-socket": [
         "src/public_api.ts"
       ],
       "@env": [

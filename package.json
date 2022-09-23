@@ -1,10 +1,10 @@
 {
-  "name": "@firestitch/clipboard",
-  "title": "Clipboard",
+  "name": "@firestitch/web-socket",
+  "title": "Web Socket",
   "version": "12.0.0",
   "repository": {
     "type": "git",
-    "url": "https://github.com/Firestitch/ngx-clipboard"
+    "url": "https://github.com/Firestitch/ngx-web-socket"
   },
   "author": {
     "name": "Firestitch",
@@ -14,9 +14,6 @@
     "angular"
   ],
   "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/Firestitch/ngx-clipboard/issues"
-  },
   "main": "package/index.js",
   "typings": "package/index.d.ts",
   "scripts": {
