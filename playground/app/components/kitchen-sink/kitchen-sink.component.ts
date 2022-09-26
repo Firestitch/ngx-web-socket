@@ -22,4 +22,8 @@ export class KitchenSinkComponent {
   public connect() {
     this._webSocket.connect();
   }
+
+  public sendMessage() {
+    this._webSocket.send('test', 'hello');
+  }
 }
