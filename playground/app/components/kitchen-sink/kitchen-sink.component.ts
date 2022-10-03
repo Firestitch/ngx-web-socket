@@ -17,10 +17,15 @@ export class KitchenSinkComponent {
     private message: FsMessage,
     private _webSocket: FsWebSocket,
   ) {
+
+    this._webSocket.routeObservable('test')
+      .subscribe((message) => {
+        console.log(message);
+      })
   }
 
   public connect() {
-    this._webSocket.connect();
+    this._webSocket.setPort(9501).connect();
   }
 
   public sendMessage() {

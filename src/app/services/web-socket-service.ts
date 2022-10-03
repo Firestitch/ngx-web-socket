@@ -55,12 +55,6 @@ export class FsWebSocket {
     this._host = window.location.hostname;
     this._port = parseInt(window.location.port, 10);
 
-    this.connectionStatus$.pipe(
-      skip(1),
-      filter((status: any) => !status),
-      tap(() => this.connect()),
-    ).subscribe();
-
     this.messages$ = this._messagesSubject$.pipe(switchAll(), catchError((e) => {
       throw e;
     }));
@@ -109,7 +103,7 @@ export class FsWebSocket {
     openObserver.pipe(
       map((_: any) => true),
       tap(() => {
-        //resubscribe to routes after reconnect
+        // resubscribe to routes after reconnect
         this._routeObservables.forEach((routeObservable: any) => {
           this._socket$.next({ subscribe: routeObservable.route });
         });
@@ -117,7 +111,15 @@ export class FsWebSocket {
     ).subscribe(this._status$);
 
     const closeObserver = new Subject<CloseEvent>();
-    closeObserver.pipe(map((_: any) => false)).subscribe(this._status$);
+    closeObserver
+      .pipe(
+        map((_: any) => {
+          return false;
+        })
+      )
+      .subscribe((something) => {
+        this._status$.next(something);
+      });
 
     this._socket$ = webSocket<any>({
       url,
@@ -125,10 +127,18 @@ export class FsWebSocket {
       closeObserver,
     });
 
-    this._socket$.pipe(retryWhen((errs: any) => errs.pipe(retryConnection, repeat())))
+    this._socket$
+      .pipe(
+        retryWhen((errs: any) => {
+          return errs.pipe(
+            retryConnection,
+            repeat()
+          )
+        })
+      )
       .subscribe((message: any) => {
+        // send messages to appropriate observables based on route
         this._routeObservables.forEach((routeObservable: any) => {
-          //send messages to appropriate observables based on route
           if (message.route === routeObservable.route) {
             routeObservable.observable.next(message);
           }
@@ -166,11 +176,12 @@ export class FsWebSocket {
 
     this._routeObservables.push(routeObservable);
 
-    this._socket$.next({ subscribe: route });
+    if (this.isConnected()) {
+      this._socket$.next({ subscribe: route });
+    }
 
     return routeObservable.observable.asObservable().pipe(
       finalize(() => {
-        //todo:  is there a better way to kill no longer used observables?
         setTimeout(() => {
           this._cleanupObservables();
         });
