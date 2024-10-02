@@ -33,7 +33,6 @@ const routes: Routes = [
     FsStoreModule,
     FsExampleModule.forRoot(),
     FsMessageModule.forRoot(),
-    ToastrModule.forRoot({ preventDuplicates: true }),
     RouterModule.forRoot(routes),
   ],
   declarations: [
