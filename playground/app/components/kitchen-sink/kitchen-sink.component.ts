@@ -2,11 +2,14 @@ import { Component } from '@angular/core';
 import { FsExampleComponent } from '@firestitch/example';
 import { FsMessage } from '@firestitch/message';
 import { FsWebSocket } from '@firestitch/web-socket';
+import { MatButton } from '@angular/material/button';
 
 @Component({
-  selector: 'app-kitchen-sink',
-  templateUrl: 'kitchen-sink.component.html',
-  styleUrls: ['kitchen-sink.component.scss']
+    selector: 'app-kitchen-sink',
+    templateUrl: 'kitchen-sink.component.html',
+    styleUrls: ['kitchen-sink.component.scss'],
+    standalone: true,
+    imports: [MatButton]
 })
 export class KitchenSinkComponent {
 
