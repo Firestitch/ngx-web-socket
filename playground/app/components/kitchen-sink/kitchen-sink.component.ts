@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { FsExampleComponent } from '@firestitch/example';
 import { FsMessage } from '@firestitch/message';
 import { FsWebSocket } from '@firestitch/web-socket';
@@ -12,14 +12,14 @@ import { MatButton } from '@angular/material/button';
     imports: [MatButton]
 })
 export class KitchenSinkComponent {
+  private exampleComponent = inject(FsExampleComponent);
+  private message = inject(FsMessage);
+  private _webSocket = inject(FsWebSocket);
+
 
   public config = {};
 
-  constructor(
-    private exampleComponent: FsExampleComponent,
-    private message: FsMessage,
-    private _webSocket: FsWebSocket,
-  ) {
+  constructor() {
 
     this._webSocket.routeObservable('test')
       .subscribe((message) => {
