@@ -1,9 +1,9 @@
 import { Injectable } from '@angular/core';
 
-import { catchError, tap, switchAll, skip, distinctUntilChanged, map, retryWhen, repeat, switchMap, filter, finalize } from 'rxjs/operators';
 import { BehaviorSubject, Observable, Subject, timer } from 'rxjs';
+import { catchError, distinctUntilChanged, finalize, map, repeat, retryWhen, switchAll, switchMap, tap } from 'rxjs/operators';
 
-import { webSocket } from 'rxjs/webSocket';
+import { WebSocketSubject, webSocket } from 'rxjs/webSocket';
 
 
 /**
@@ -25,6 +25,17 @@ import { webSocket } from 'rxjs/webSocket';
  * //send a message to route
  * this._websocketService
  *  .send('chat/123/message',{text: 'hello'});
+ *
+ * //send a generic message (no route)
+ * this._websocketService
+ *  .send({type: 'ping', timestamp: Date.now()});
+ *
+ * //receive all messages (generic)
+ * this._websocketService
+ *  .receive()
+ *  .subscribe((message) => {
+ *    console.log('Received:', message);
+ *  });
  */
 @Injectable({
   providedIn: 'root',
@@ -32,8 +43,9 @@ import { webSocket } from 'rxjs/webSocket';
 export class FsWebSocket {
 
   public messages$: Observable<any>;
-  private _socket$: any;
+  private _socket$: WebSocketSubject<any>;
   private _messagesSubject$ = new Subject();
+  private _genericMessagesSubject$ = new Subject<any>();
 
   private _status$: BehaviorSubject<boolean> = new BehaviorSubject<boolean>(false);
   private _attemptNr: number = 0;
@@ -47,7 +59,7 @@ export class FsWebSocket {
   private _path: string = '/ws';
 
   public get connectionStatus$(): Observable<boolean> {
-    return this._status$.pipe(distinctUntilChanged());
+    return this._status$.asObservable().pipe(distinctUntilChanged());
   }
 
   constructor() {
@@ -137,6 +149,9 @@ export class FsWebSocket {
         })
       )
       .subscribe((message: any) => {
+        // emit to generic messages observable
+        this._genericMessagesSubject$.next(message);
+        
         // send messages to appropriate observables based on route
         this._routeObservables.forEach((routeObservable: any) => {
           if (message.route === routeObservable.route) {
@@ -191,14 +206,31 @@ export class FsWebSocket {
 
   /**
    * send message to server
+   * Can be called with:
+   * - send(route, data) - sends data to a specific route
+   * - send(data) - sends generic data without route
    */
-  public send(route: string, data?: any): void {
-    const message = {
-      route,
-      data,
-    };
+  public send(routeOrData: string | any, data?: any): void {
+    if (!this._socket$) {
+      throw new Error('WebSocket is not initialized. Call connect() first.');
+    }
 
-    return this._socket$.next(message);
+    // If first argument is a string and second argument exists, treat as route + data
+    if (typeof routeOrData === 'string' && data !== undefined) {
+      this._socket$.next({ route: routeOrData, ...data });
+    } else {
+      // Otherwise, treat first argument as generic data
+      this._socket$.next(routeOrData);
+    }
+  }
+
+
+  /**
+   * receive all messages from server (generic, non-route-specific)
+   * Returns an observable that emits all incoming messages
+   */
+  public receive(): Observable<any> {
+    return this._genericMessagesSubject$.asObservable();
   }
 
 

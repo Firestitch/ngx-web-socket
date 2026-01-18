@@ -1,13 +1,100 @@
-<button
-    type="button"
-    mat-raised-button
-    (click)="connect()">
-  Connect
-</button>
+<div class="controls">
+  <button
+      type="button"
+      mat-flat-button
+      color="primary"
+      (click)="connect()"
+      [disabled]="isConnected">
+    Connect
+  </button>
 
-<button
-    type="button"
-    mat-raised-button
-    (click)="sendMessage()">
-  Send Message
-</button>
+  <button
+      type="button"
+      mat-flat-button
+      color="warn"
+      (click)="disconnect()"
+      [disabled]="!isConnected">
+    Disconnect
+  </button>
+
+  <button
+      type="button"
+      mat-flat-button
+      color="accent"
+      (click)="echoMessage()"
+      [disabled]="!isConnected">
+    Echo Message
+  </button>
+
+  <button
+      type="button"
+      mat-flat-button
+      (click)="clearMessages()"
+      [disabled]="receivedMessages.length === 0 && sentMessages.length === 0">
+    Clear Messages
+  </button>
+
+  <span class="status-chip" [class.connected]="isConnected">
+    {{ isConnected ? 'Connected' : 'Disconnected' }}
+  </span>
+</div>
+
+<div class="messages-container">
+  <div class="messages-columns">
+    <!-- Sent Messages Column -->
+    <div class="messages-column sent-column">
+      <div class="messages-header">
+        <h2>
+          Sent Messages
+          <span class="message-count">({{ sentMessages.length }})</span>
+        </h2>
+      </div>
+      <div class="messages-content">
+        <div class="messages-list" *ngIf="sentMessages.length > 0; else noSentMessages">
+          <div class="message-item sent-message" *ngFor="let message of sentMessages">
+            <div class="message-header">
+              <span class="timestamp">{{ message.timestamp | date:'HH:mm:ss.SSS' }}</span>
+              <span *ngIf="message.route" class="route-chip">
+                Route: {{ message.route }}
+              </span>
+            </div>
+            <pre class="message-content">{{ formatMessage(message.data) }}</pre>
+          </div>
+        </div>
+        <ng-template #noSentMessages>
+          <div class="no-messages">
+            No messages sent yet.
+          </div>
+        </ng-template>
+      </div>
+    </div>
+
+    <!-- Received Messages Column -->
+    <div class="messages-column received-column">
+      <div class="messages-header">
+        <h2>
+          Received Messages
+          <span class="message-count">({{ receivedMessages.length }})</span>
+        </h2>
+      </div>
+      <div class="messages-content">
+        <div class="messages-list" *ngIf="receivedMessages.length > 0; else noReceivedMessages">
+          <div class="message-item received-message" *ngFor="let message of receivedMessages">
+            <div class="message-header">
+              <span class="timestamp">{{ message.timestamp | date:'HH:mm:ss.SSS' }}</span>
+              <span *ngIf="message.route" class="route-chip">
+                Route: {{ message.route }}
+              </span>
+            </div>
+            <pre class="message-content">{{ formatMessage(message.data) }}</pre>
+          </div>
+        </div>
+        <ng-template #noReceivedMessages>
+          <div class="no-messages">
+            No messages received yet.
+          </div>
+        </ng-template>
+      </div>
+    </div>
+  </div>
+</div>
