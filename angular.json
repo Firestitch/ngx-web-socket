@@ -67,7 +67,8 @@
           "builder": "@angular-devkit/build-angular:dev-server",
           "options": {
             "port": 8000,
-            "buildTarget": "fs-package-app:build"
+            "buildTarget": "fs-package-app:build",
+            "proxyConfig": "playground/proxy.conf.js"
           },
           "configurations": {
             "production": {

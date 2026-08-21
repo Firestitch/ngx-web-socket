@@ -1,100 +1,163 @@
-<div class="controls">
-  <button
-      type="button"
-      mat-flat-button
-      color="primary"
-      (click)="connect()"
-      [disabled]="isConnected">
-    Connect
-  </button>
-
-  <button
-      type="button"
-      mat-flat-button
-      color="warn"
-      (click)="disconnect()"
-      [disabled]="!isConnected">
-    Disconnect
-  </button>
-
-  <button
-      type="button"
-      mat-flat-button
-      color="accent"
-      (click)="echoMessage()"
-      [disabled]="!isConnected">
-    Echo Message
-  </button>
-
-  <button
-      type="button"
-      mat-flat-button
-      (click)="clearMessages()"
-      [disabled]="receivedMessages.length === 0 && sentMessages.length === 0">
-    Clear Messages
-  </button>
-
-  <span class="status-chip" [class.connected]="isConnected">
-    {{ isConnected ? 'Connected' : 'Disconnected' }}
-  </span>
-</div>
-
-<div class="messages-container">
-  <div class="messages-columns">
-    <!-- Sent Messages Column -->
-    <div class="messages-column sent-column">
-      <div class="messages-header">
-        <h2>
-          Sent Messages
-          <span class="message-count">({{ sentMessages.length }})</span>
-        </h2>
-      </div>
-      <div class="messages-content">
-        <div class="messages-list" *ngIf="sentMessages.length > 0; else noSentMessages">
-          <div class="message-item sent-message" *ngFor="let message of sentMessages">
-            <div class="message-header">
-              <span class="timestamp">{{ message.timestamp | date:'HH:mm:ss.SSS' }}</span>
-              <span *ngIf="message.route" class="route-chip">
-                Route: {{ message.route }}
-              </span>
-            </div>
-            <pre class="message-content">{{ formatMessage(message.data) }}</pre>
-          </div>
-        </div>
-        <ng-template #noSentMessages>
-          <div class="no-messages">
-            No messages sent yet.
-          </div>
-        </ng-template>
-      </div>
-    </div>
-
-    <!-- Received Messages Column -->
-    <div class="messages-column received-column">
-      <div class="messages-header">
-        <h2>
-          Received Messages
-          <span class="message-count">({{ receivedMessages.length }})</span>
-        </h2>
-      </div>
-      <div class="messages-content">
-        <div class="messages-list" *ngIf="receivedMessages.length > 0; else noReceivedMessages">
-          <div class="message-item received-message" *ngFor="let message of receivedMessages">
-            <div class="message-header">
-              <span class="timestamp">{{ message.timestamp | date:'HH:mm:ss.SSS' }}</span>
-              <span *ngIf="message.route" class="route-chip">
-                Route: {{ message.route }}
-              </span>
-            </div>
-            <pre class="message-content">{{ formatMessage(message.data) }}</pre>
-          </div>
-        </div>
-        <ng-template #noReceivedMessages>
-          <div class="no-messages">
-            No messages received yet.
-          </div>
-        </ng-template>
-      </div>
-    </div>
+<section class="panel">
+  <div class="panel-head">
+    <h2>Connection</h2>
+    <span class="status-chip" [class.connected]="connected">
+      {{ connected ? 'Connected' : 'Disconnected' }}
+    </span>
   </div>
-</div>
+
+  <p class="note">
+    A real WebSocket to a server running inside <code>ng serve</code> &mdash;
+    open DevTools &rarr; Network &rarr; WS and watch the frames as you use this
+    page. The socket opens when something first listens and closes when the last
+    listener goes, and connected means the server accepted the connection rather
+    than merely that the transport opened.
+  </p>
+
+  <div class="controls">
+    <button type="button" mat-stroked-button (click)="dropConnection()" [disabled]="!connected">
+      Drop connection
+    </button>
+    <button type="button" mat-stroked-button (click)="serverPush()" [disabled]="!connected">
+      Server push
+    </button>
+    <button type="button" mat-stroked-button (click)="clear()">
+      Clear
+    </button>
+  </div>
+
+  <dl class="facts">
+    <dt>Connection</dt>
+    <dd>{{ connectionId || '—' }}</dd>
+    <dt>Server</dt>
+    <dd>ws://{{ host }}:9501</dd>
+  </dl>
+</section>
+
+<section class="panel">
+  <div class="panel-head">
+    <h2>Topic handle &mdash; <code>topic()</code></h2>
+    <span class="topic-chip">{{ topicName }}</span>
+  </div>
+
+  <p class="note">
+    Adding a watcher sends its own subscribe, which the server treats as a
+    no-op. Removing one sends nothing until the last goes &mdash; that reference
+    counting is what stops one screen closing from silencing another on the same
+    topic. Watch the wire log.
+  </p>
+
+  <div class="controls">
+    <button type="button" mat-flat-button color="primary" (click)="publishPrimary()" [disabled]="!connected">
+      Publish
+    </button>
+    <button type="button" mat-stroked-button (click)="addWatcher()">
+      Add watcher
+    </button>
+    <button type="button" mat-stroked-button (click)="removeWatcher()" [disabled]="watcherCount === 0">
+      Remove watcher
+    </button>
+    <span class="count-chip">{{ watcherCount }} watching</span>
+  </div>
+
+  @if (primaryMessages.length) {
+    <ul class="entries">
+      @for (entry of primaryMessages; track $index) {
+        <li class="entry received">
+          <span class="timestamp">{{ entry.timestamp | date:'HH:mm:ss.SSS' }}</span>
+          <code>{{ format(entry.data) }}</code>
+        </li>
+      }
+    </ul>
+  } @else {
+    <div class="empty">Nothing received yet.</div>
+  }
+</section>
+
+<section class="panel">
+  <div class="panel-head">
+    <h2>Second topic &mdash; <code>watch()</code></h2>
+    <span class="topic-chip">{{ secondaryTopic }}</span>
+  </div>
+
+  <p class="note">
+    One socket carries every topic the tab watches, so a payload is filtered by
+    topic as well as event name. Publish here while the watcher is off and
+    nothing arrives; the first panel never sees these either.
+  </p>
+
+  <div class="controls">
+    <button type="button" mat-flat-button color="primary" (click)="publishSecondary()" [disabled]="!connected">
+      Publish
+    </button>
+    <button type="button" mat-stroked-button (click)="toggleSecondary()">
+      {{ secondaryWatching ? 'Stop watching' : 'Start watching' }}
+    </button>
+    <span class="count-chip" [class.on]="secondaryWatching">
+      {{ secondaryWatching ? 'watching' : 'not watching' }}
+    </span>
+  </div>
+
+  @if (secondaryMessages.length) {
+    <ul class="entries">
+      @for (entry of secondaryMessages; track $index) {
+        <li class="entry received">
+          <span class="timestamp">{{ entry.timestamp | date:'HH:mm:ss.SSS' }}</span>
+          <code>{{ format(entry.data) }}</code>
+        </li>
+      }
+    </ul>
+  } @else {
+    <div class="empty">Nothing received yet.</div>
+  }
+</section>
+
+<section class="panel">
+  <div class="panel-head">
+    <h2>Refused topics &mdash; <code>on()</code></h2>
+    <span class="topic-chip">{{ forbiddenTopic }}</span>
+  </div>
+
+  <p class="note">
+    A topic the server will not serve is answered with a message, not a closed
+    socket &mdash; one screen asking for something it may not see never costs
+    the others their connection. The refusal arrives on the raw
+    <code>on()</code> and shows up in the server events below.
+  </p>
+
+  <div class="controls">
+    <button type="button" mat-stroked-button (click)="requestForbidden()" [disabled]="!connected">
+      Subscribe to a forbidden topic
+    </button>
+  </div>
+</section>
+
+<section class="panel">
+  <div class="panel-head">
+    <h2>Server events &mdash; <code>on()</code></h2>
+    <span class="count-chip">{{ serverEvents.length }}</span>
+  </div>
+
+  <p class="note">
+    What the server says about the connection itself, heard through the raw
+    <code>on()</code>. Drop the connection and watch it re-declare every topic
+    still being watched &mdash; server-side subscriptions do not survive a
+    reconnect, and a client that assumes they do goes quiet after the first
+    blip with the socket open and apparently healthy. Then open this page in a
+    second tab and publish: the tabs are two clients of one server.
+  </p>
+
+  @if (serverEvents.length) {
+    <ul class="entries wire">
+      @for (entry of serverEvents; track $index) {
+        <li class="entry" [class.denied]="entry.event === 'denied'" [class.received]="entry.event !== 'denied'">
+          <span class="timestamp">{{ entry.timestamp | date:'HH:mm:ss.SSS' }}</span>
+          <span class="event">{{ entry.event }}</span>
+          <code>{{ format(entry.data) }}</code>
+        </li>
+      }
+    </ul>
+  } @else {
+    <div class="empty">Nothing yet.</div>
+  }
+</section>

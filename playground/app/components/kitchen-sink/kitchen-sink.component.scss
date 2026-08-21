@@ -1,142 +1,169 @@
-.controls {
-  display: flex;
-  gap: 12px;
-  align-items: center;
+:host {
+  display: block;
+}
+
+.panel {
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  border-radius: 4px;
+  padding: 16px;
   margin-bottom: 24px;
-  flex-wrap: wrap;
-}
 
-.messages-container {
-  margin-top: 24px;
-}
-
-.messages-columns {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 24px;
-  
-  @media (max-width: 768px) {
-    grid-template-columns: 1fr;
+  &:last-child {
+    margin-bottom: 0;
   }
 }
 
-.messages-column {
+.panel-head {
   display: flex;
-  flex-direction: column;
-}
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 8px;
 
-.messages-header {
-  margin-bottom: 16px;
-  
   h2 {
     margin: 0;
-    font-size: 1.25rem;
+    font-size: 1.05rem;
     font-weight: 500;
   }
 }
 
-.messages-content {
-  padding: 16px;
-  border: 1px solid rgba(0, 0, 0, 0.12);
-  border-radius: 4px;
-  background-color: #fafafa;
-  flex: 1;
-  overflow-y: auto;
-  max-height: 600px;
-}
-
-.message-count {
-  font-size: 0.8em;
-  font-weight: normal;
+.note {
+  margin: 0 0 16px;
+  font-size: 0.8125rem;
+  line-height: 1.5;
   color: rgba(0, 0, 0, 0.6);
-  margin-left: 8px;
+  max-width: 70ch;
 }
 
-.messages-list {
+.controls {
   display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-
-.message-item {
-  border: 1px solid rgba(0, 0, 0, 0.12);
-  border-radius: 4px;
-  padding: 12px;
-  transition: background-color 0.2s;
-
-  &:hover {
-    background-color: #f5f5f5;
-  }
-
-  &.sent-message {
-    background-color: #e3f2fd;
-    border-left: 3px solid #2196f3;
-  }
-
-  &.received-message {
-    background-color: #f1f8e9;
-    border-left: 3px solid #8bc34a;
-  }
-}
-
-.message-header {
-  display: flex;
-  justify-content: space-between;
+  gap: 12px;
   align-items: center;
-  margin-bottom: 8px;
-  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
 }
 
-.timestamp {
-  font-size: 0.75em;
-  color: rgba(0, 0, 0, 0.6);
+.facts {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 4px 16px;
+  margin: 0;
+  font-size: 0.8125rem;
+
+  dt {
+    color: rgba(0, 0, 0, 0.6);
+  }
+
+  dd {
+    margin: 0;
+    font-family: monospace;
+  }
+}
+
+.status-chip,
+.topic-chip,
+.count-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 12px;
+  border-radius: 16px;
+  font-size: 0.75rem;
   font-weight: 500;
+  white-space: nowrap;
 }
 
 .status-chip {
-  display: inline-flex;
-  align-items: center;
-  padding: 4px 12px;
-  border-radius: 16px;
-  font-size: 0.75em;
-  font-weight: 500;
   background-color: rgba(0, 0, 0, 0.12);
   color: rgba(0, 0, 0, 0.87);
-  
+
   &.connected {
     background-color: #4caf50;
-    color: white;
+    color: #fff;
   }
 }
 
-.route-chip {
-  display: inline-flex;
-  align-items: center;
-  padding: 4px 12px;
-  border-radius: 16px;
-  font-size: 0.75em;
-  font-weight: 500;
+.topic-chip {
   background-color: rgba(63, 81, 181, 0.12);
   color: #3f51b5;
-  height: 24px;
+  font-family: monospace;
 }
 
-.message-content {
+.count-chip {
+  background-color: rgba(0, 0, 0, 0.06);
+  color: rgba(0, 0, 0, 0.6);
+
+  &.on {
+    background-color: rgba(76, 175, 80, 0.16);
+    color: #2e7d32;
+  }
+}
+
+.entries {
+  list-style: none;
   margin: 0;
-  padding: 12px;
-  background-color: #ffffff;
-  border: 1px solid rgba(0, 0, 0, 0.08);
-  border-radius: 4px;
-  font-size: 0.875em;
-  line-height: 1.5;
-  overflow-x: auto;
-  white-space: pre-wrap;
-  word-wrap: break-word;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  max-height: 320px;
+  overflow-y: auto;
+
+  &.wire {
+    max-height: 420px;
+  }
 }
 
-.no-messages {
+.entry {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  padding: 6px 10px;
+  border-radius: 4px;
+  border-left: 3px solid transparent;
+  background-color: #fafafa;
+  font-size: 0.75rem;
+
+  code {
+    font-family: monospace;
+    overflow-wrap: anywhere;
+  }
+
+  &.sent {
+    background-color: #e3f2fd;
+    border-left-color: #2196f3;
+  }
+
+  &.received {
+    background-color: #f1f8e9;
+    border-left-color: #8bc34a;
+  }
+
+  &.denied {
+    background-color: #fdecea;
+    border-left-color: #e53935;
+  }
+}
+
+.timestamp {
+  color: rgba(0, 0, 0, 0.5);
+  font-family: monospace;
+  white-space: nowrap;
+}
+
+.arrow {
+  font-weight: 700;
+}
+
+.event {
+  font-weight: 600;
+  font-family: monospace;
+  white-space: nowrap;
+}
+
+.empty {
+  padding: 24px;
   text-align: center;
-  padding: 48px 24px;
   color: rgba(0, 0, 0, 0.6);
   font-style: italic;
+  font-size: 0.8125rem;
 }

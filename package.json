@@ -1,7 +1,7 @@
 {
   "name": "@firestitch/web-socket",
   "title": "Web Socket",
-  "version": "18.0.0",
+  "version": "18.0.1",
   "repository": {
     "type": "git",
     "url": "https://github.com/Firestitch/ngx-web-socket"
@@ -66,6 +66,7 @@
     "lodash-es": "^4.17.15",
     "rxjs": "^7.5.6",
     "typescript": "5.4.5",
+    "ws": "^8.18.0",
     "zone.js": "~0.14.10"
   },
   "engines": {
